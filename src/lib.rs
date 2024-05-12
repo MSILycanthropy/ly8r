@@ -94,6 +94,16 @@ impl Chip8 {
         self.load(&buffer);
     }
 
+    pub fn reset_keys(&mut self) {
+        for i in 0..self.keys.len() {
+            self.keys[i] = false;
+        }
+    }
+
+    pub fn set_key_pressed(&mut self, index: usize) {
+        self.keys[index] = true;
+    }
+
     fn load(&mut self, data: &[u8]) {
         let start_addr = START_ADDRESS as usize;
         let end_addr = start_addr + data.len();
@@ -116,7 +126,7 @@ impl Chip8 {
         self.ram[..80].copy_from_slice(&FONT);
     }
 
-    fn clear_screen(&mut self) {
+    pub fn clear_screen(&mut self) {
         self.display = [false; SCREEN_HEIGHT * SCREEN_WIDTH];
     }
 }

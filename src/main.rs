@@ -20,11 +20,24 @@ fn window_conf() -> Conf {
 async fn main() {
     let mut chip8 = Chip8::default();
 
-    chip8.load_from_file("roms/4-flags.ch8");
+    chip8.load_from_file("roms/5-quirks.ch8");
 
     let min_frame_time = 1. / 60.;
     loop {
         clear_background(BLACK);
+
+        chip8.reset_keys();
+
+        let keys = get_keys_down()
+            .iter()
+            .map(map_key)
+            .filter(|o| o.is_some())
+            .flatten()
+            .collect::<Vec<usize>>();
+
+        for key in keys {
+            chip8.set_key_pressed(key)
+        }
 
         chip8.clock(10);
 
@@ -53,5 +66,27 @@ async fn main() {
             let time_to_sleep = (min_frame_time - current_frame_time) * 1000.;
             std::thread::sleep(std::time::Duration::from_millis(time_to_sleep as u64));
         }
+    }
+}
+
+fn map_key(key: &KeyCode) -> Option<usize> {
+    match key {
+        KeyCode::Key1 => Some(0x1),
+        KeyCode::Key2 => Some(0x2),
+        KeyCode::Key3 => Some(0x3),
+        KeyCode::Key4 => Some(0xC),
+        KeyCode::Q => Some(0x4),
+        KeyCode::W => Some(0x5),
+        KeyCode::E => Some(0x6),
+        KeyCode::R => Some(0xD),
+        KeyCode::A => Some(0x7),
+        KeyCode::S => Some(0x8),
+        KeyCode::D => Some(0x9),
+        KeyCode::F => Some(0xE),
+        KeyCode::Z => Some(0xA),
+        KeyCode::X => Some(0x0),
+        KeyCode::C => Some(0xB),
+        KeyCode::V => Some(0xF),
+        _ => None,
     }
 }

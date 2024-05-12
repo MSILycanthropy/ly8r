@@ -236,24 +236,24 @@ fn draw(opcode: Opcode, chip8: &mut Chip8) {
     let x_start = chip8.v_registers[opcode.second()] as usize;
     let y_start = chip8.v_registers[opcode.third()] as usize;
 
-    let rows = opcode.last();
+    let cols = opcode.last();
 
     let mut flipped = false;
 
-    for row in 0..rows {
-        let addr = chip8.i_register + row as u16;
+    for col in 0..cols {
+        let addr = chip8.i_register + col as u16;
         let pixels = chip8.ram[addr as usize];
+        let y = (y_start + col) % SCREEN_HEIGHT;
 
-        for col in 0..8 {
-            if (pixels & (0b1000_0000 >> col)) != 0 {
-                let x = (x_start + col) % SCREEN_WIDTH;
-                let y = (y_start + row) % SCREEN_HEIGHT;
+        for row in 0..8 {
+            if (pixels & (0b1000_0000 >> row)) != 0 {
+                let x = (x_start + row) % SCREEN_WIDTH;
 
                 let index = x + SCREEN_WIDTH * y;
 
                 flipped |= chip8.display[index];
 
-                chip8.display[index] = true;
+                chip8.display[index] ^= true;
             }
         }
     }
