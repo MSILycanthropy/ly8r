@@ -20,7 +20,7 @@ fn window_conf() -> Conf {
 async fn main() {
     let mut chip8 = Chip8::default();
 
-    chip8.load_from_file("roms/5-quirks.ch8");
+    chip8.load_from_file("roms/6-keypad.ch8");
 
     let min_frame_time = 1. / 60.;
     loop {

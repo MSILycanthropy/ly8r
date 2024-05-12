@@ -35,6 +35,8 @@ pub struct Chip8 {
     pub ram: [u8; 4096],
 
     pub display: [bool; SCREEN_HEIGHT * SCREEN_WIDTH],
+
+    old_keys: [bool; 16],
     pub keys: [bool; 16],
 
     i_register: u16,
@@ -46,6 +48,8 @@ pub struct Chip8 {
 
     delay_timer: u8,
     sound_timer: u8,
+
+    waiting: bool,
 }
 
 impl Default for Chip8 {
@@ -55,6 +59,7 @@ impl Default for Chip8 {
 
             display: [false; SCREEN_HEIGHT * SCREEN_WIDTH],
 
+            old_keys: [false; 16],
             keys: [false; 16],
 
             i_register: 0,
@@ -66,6 +71,8 @@ impl Default for Chip8 {
 
             delay_timer: 0,
             sound_timer: 0,
+
+            waiting: false,
         };
 
         instance.ram[..80].copy_from_slice(&FONT);
@@ -114,6 +121,7 @@ impl Chip8 {
     fn reset(&mut self) {
         self.ram = [0; 4096];
         self.display = [false; SCREEN_HEIGHT * SCREEN_WIDTH];
+        self.old_keys = [false; 16];
         self.keys = [false; 16];
         self.i_register = 0;
         self.v_registers = [0; 16];
@@ -122,6 +130,8 @@ impl Chip8 {
         self.stack_pointer = 0;
         self.delay_timer = 0;
         self.sound_timer = 0;
+
+        self.waiting = false;
 
         self.ram[..80].copy_from_slice(&FONT);
     }

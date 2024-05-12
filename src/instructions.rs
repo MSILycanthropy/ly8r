@@ -154,14 +154,20 @@ fn move_(opcode: Opcode, chip8: &mut Chip8) {
 }
 
 fn or(opcode: Opcode, chip8: &mut Chip8) {
+    chip8.v_registers[0xF] = 0;
+
     chip8.v_registers[opcode.second()] |= chip8.v_registers[opcode.third()]
 }
 
 fn and(opcode: Opcode, chip8: &mut Chip8) {
+    chip8.v_registers[0xF] = 0;
+
     chip8.v_registers[opcode.second()] &= chip8.v_registers[opcode.third()]
 }
 
 fn xor(opcode: Opcode, chip8: &mut Chip8) {
+    chip8.v_registers[0xF] = 0;
+
     chip8.v_registers[opcode.second()] ^= chip8.v_registers[opcode.third()]
 }
 
@@ -188,9 +194,9 @@ fn sub(opcode: Opcode, chip8: &mut Chip8) {
 }
 
 fn shr(opcode: Opcode, chip8: &mut Chip8) {
-    let new_vf = chip8.v_registers[opcode.second()] & 1;
+    let new_vf = chip8.v_registers[opcode.third()] & 1;
 
-    chip8.v_registers[opcode.second()] >>= 1;
+    chip8.v_registers[opcode.second()] = chip8.v_registers[opcode.third()] >> 1;
     chip8.v_registers[0xF] = new_vf;
 }
 
@@ -206,9 +212,9 @@ fn subn(opcode: Opcode, chip8: &mut Chip8) {
 }
 
 fn shl(opcode: Opcode, chip8: &mut Chip8) {
-    let new_vf = (chip8.v_registers[opcode.second()] >> 7) & 1;
+    let new_vf = (chip8.v_registers[opcode.third()] >> 7) & 1;
 
-    chip8.v_registers[opcode.second()] <<= 1;
+    chip8.v_registers[opcode.second()] = chip8.v_registers[opcode.third()] << 1;
     chip8.v_registers[0xF] = new_vf;
 }
 
@@ -281,21 +287,8 @@ fn moved(opcode: Opcode, chip8: &mut Chip8) {
     chip8.v_registers[opcode.second()] = chip8.delay_timer;
 }
 
-fn keyd(opcode: Opcode, chip8: &mut Chip8) {
-    let mut pressed = false;
-
-    for i in 0..chip8.keys.len() {
-        if chip8.keys[i] {
-            chip8.v_registers[opcode.second()] = i as u8;
-
-            pressed = true;
-            break;
-        }
-    }
-
-    if !pressed {
-        chip8.program_counter -= 2;
-    }
+fn keyd(_: Opcode, chip8: &mut Chip8) {
+    chip8.waiting = true;
 }
 
 fn loadd(opcode: Opcode, chip8: &mut Chip8) {
