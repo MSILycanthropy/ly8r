@@ -19,7 +19,7 @@ impl Opcode {
     }
 
     fn last_3(&self) -> u16 {
-        self.full & 0xFFF
+        self.full & 0x0FFF
     }
 
     fn last_2(&self) -> u8 {
@@ -29,13 +29,11 @@ impl Opcode {
 
 const INSTRUCTION_TABLE: [fn(Opcode, &mut Chip8); 35] = [
     sys, clr, rts, jump, call, ske, skne, skre, load, add, move_, or, and, xor, addr, sub, shr,
-    shl, subn, skrne, loadi, jumpv, rand, draw, skpr, skup, moved, keyd, loadd, loads, addi, ldspr,
+    subn, shl, skrne, loadi, jumpv, rand, draw, skpr, skup, moved, keyd, loadd, loads, addi, ldspr,
     bcd, stor, read,
 ];
 
 pub(crate) fn parse_opcode(raw: u16) -> Opcode {
-    println!("{:X}", raw);
-
     Opcode {
         full: raw,
         parts: (
@@ -107,8 +105,6 @@ fn rts(_: Opcode, chip8: &mut Chip8) {
 }
 
 fn jump(opcode: Opcode, chip8: &mut Chip8) {
-    chip8.push(chip8.program_counter);
-
     chip8.program_counter = opcode.last_3();
 }
 
@@ -148,7 +144,9 @@ fn load(opcode: Opcode, chip8: &mut Chip8) {
 }
 
 fn add(opcode: Opcode, chip8: &mut Chip8) {
-    let _ = chip8.v_registers[opcode.second()].wrapping_add(opcode.last_2());
+    let vx = chip8.v_registers[opcode.second()];
+
+    chip8.v_registers[opcode.second()] = vx.wrapping_add(opcode.last_2());
 }
 
 fn move_(opcode: Opcode, chip8: &mut Chip8) {
@@ -190,9 +188,10 @@ fn sub(opcode: Opcode, chip8: &mut Chip8) {
 }
 
 fn shr(opcode: Opcode, chip8: &mut Chip8) {
-    chip8.v_registers[0xF] = chip8.v_registers[opcode.second()] & 1;
+    let new_vf = chip8.v_registers[opcode.second()] & 1;
 
-    chip8.v_registers[opcode.second()] >>= 1
+    chip8.v_registers[opcode.second()] >>= 1;
+    chip8.v_registers[0xF] = new_vf;
 }
 
 fn subn(opcode: Opcode, chip8: &mut Chip8) {
@@ -207,9 +206,10 @@ fn subn(opcode: Opcode, chip8: &mut Chip8) {
 }
 
 fn shl(opcode: Opcode, chip8: &mut Chip8) {
-    chip8.v_registers[0xF] = (chip8.v_registers[opcode.second()] >> 7) & 1;
+    let new_vf = (chip8.v_registers[opcode.second()] >> 7) & 1;
 
-    chip8.v_registers[opcode.second()] <<= 1
+    chip8.v_registers[opcode.second()] <<= 1;
+    chip8.v_registers[0xF] = new_vf;
 }
 
 fn skrne(opcode: Opcode, chip8: &mut Chip8) {
@@ -241,15 +241,20 @@ fn draw(opcode: Opcode, chip8: &mut Chip8) {
     let mut flipped = false;
 
     for row in 0..rows {
+        let addr = chip8.i_register + row as u16;
+        let pixels = chip8.ram[addr as usize];
+
         for col in 0..8 {
-            let x = (x_start + row) % SCREEN_WIDTH;
-            let y = (y_start + col) % SCREEN_HEIGHT;
+            if (pixels & (0b1000_0000 >> col)) != 0 {
+                let x = (x_start + col) % SCREEN_WIDTH;
+                let y = (y_start + row) % SCREEN_HEIGHT;
 
-            let index = x + SCREEN_WIDTH * y;
+                let index = x + SCREEN_WIDTH * y;
 
-            flipped |= chip8.display[index];
+                flipped |= chip8.display[index];
 
-            chip8.display[index] = true;
+                chip8.display[index] = true;
+            }
         }
     }
 

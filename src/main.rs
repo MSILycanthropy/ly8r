@@ -20,14 +20,10 @@ fn window_conf() -> Conf {
 async fn main() {
     let mut chip8 = Chip8::default();
 
-    chip8.load_from_file("1-chip8-logo.ch8");
-
-    println!("{:x}", chip8.ram[0x0200]);
+    chip8.load_from_file("roms/4-flags.ch8");
 
     let min_frame_time = 1. / 60.;
     loop {
-        // dbg!(get_fps());
-
         clear_background(BLACK);
 
         chip8.clock(10);
@@ -59,5 +55,3 @@ async fn main() {
         }
     }
 }
-
-fn limit_fps_to(framerate: f32) {}

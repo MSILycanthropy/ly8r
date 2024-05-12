@@ -1,8 +1,4 @@
-use std::{
-    fs::File,
-    io::Read,
-    path::{Path, PathBuf},
-};
+use std::{fs::File, io::Read};
 
 use instructions::{parse_opcode, Opcode};
 
@@ -84,11 +80,9 @@ impl Chip8 {
         let low_byte = self.ram[self.program_counter as usize + 1];
         let raw = u16::from_le_bytes([low_byte, high_byte]);
 
-        let other_raw = ((high_byte as u16) << 8) | low_byte as u16;
-
         self.program_counter += 2;
 
-        parse_opcode(other_raw)
+        parse_opcode(raw)
     }
 
     pub fn load_from_file(&mut self, file_name: &str) {
@@ -120,10 +114,6 @@ impl Chip8 {
         self.sound_timer = 0;
 
         self.ram[..80].copy_from_slice(&FONT);
-    }
-
-    fn get_display(&self) -> &[bool] {
-        &self.display
     }
 
     fn clear_screen(&mut self) {
