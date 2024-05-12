@@ -1,3 +1,5 @@
+use std::env;
+
 use ly8r::{clock::Clock, Chip8, SCREEN_HEIGHT, SCREEN_WIDTH};
 
 const SCALE: i32 = 15;
@@ -18,9 +20,15 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    let argv: Vec<_> = env::args().collect();
+    if argv.len() != 2 {
+        println!("Usage: cargo run path/to/rom");
+        return;
+    }
+
     let mut chip8 = Chip8::default();
 
-    chip8.load_from_file("roms/6-keypad.ch8");
+    chip8.load_from_file(&argv[1]);
 
     let min_frame_time = 1. / 60.;
     loop {

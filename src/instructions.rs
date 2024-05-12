@@ -88,7 +88,10 @@ fn decode_instruction(opcode: &Opcode) -> usize {
         (0xF, _, 3, 3) => 32,
         (0xF, _, 5, 5) => 33,
         (0xF, _, 6, 5) => 34,
-        _ => unreachable!(),
+        _ => {
+            println!("Tried to execute fake instruction: {:X}", opcode.full);
+            unreachable!()
+        }
     }
 }
 
